@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import assetRoutes from './routes/assetRoutes.js';
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Asset Manager API is running!');
 });
-
+app.use('/api/assets', assetRoutes);
 const PORT = process.env.PORT || 5000;
 
 mongoose.connect(process.env.MONGO_URI)
