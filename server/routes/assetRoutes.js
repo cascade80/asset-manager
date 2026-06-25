@@ -4,18 +4,24 @@ import {
   createAsset,
   updateAsset,
   deleteAsset,
+  createBulkAssets,
+  searchAssets
 } from '../controllers/assetController.js';
 
 const router = express.Router();
 
-// Routes for /api/assets
-router.route('/')
-  .get(getAssets)      // GET request fetches all assets
-  .post(createAsset);  // POST request creates a new asset
 
-// Routes for /api/assets/:id  (Targeting a specific asset by its database ID)
+router.route('/')
+  .get(getAssets)      
+  .post(createAsset);  
+
+router.get('/search', searchAssets);
+router.post('/bulk', createBulkAssets);
+
+
 router.route('/:id')
-  .put(updateAsset)    // PUT request updates the specific asset
-  .delete(deleteAsset);// DELETE request removes the specific asset
+  .put(updateAsset)    
+  .delete(deleteAsset);
+  
 
 export default router;

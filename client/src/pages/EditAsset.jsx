@@ -7,25 +7,39 @@ const EditAsset = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [employeeList, setEmployeeList] = useState([]);
   
   const [formData, setFormData] = useState({
     assetTag: '',
     name: '',
     category: 'Hardware',
+    status: 'Available',
     model: '',
     serialNumber: '',
+    warrantyMonths: '',
+    productKey: '',
+    seats: '',
+    expirationDate: '',
     purchasePrice: '',
     purchaseDate: '',
     supplier: '',
-    warrantyMonths: '',
-    status: 'Available',
     assignedTo: '',
     location: '',
     notes: ''
   });
 
-  // Fetch existing data when the page loads
   useEffect(() => {
+    
+    const fetchEmployees = async () => {
+      try {
+        const res = await api.get('/users');
+        setEmployeeList(res.data);
+      } catch (err) {
+        console.error("Could not fetch employees:", err);
+      }
+    };
+
+    
     const fetchAssetDetails = async () => {
       try {
         const response = await api.get('/assets');
@@ -36,14 +50,16 @@ const EditAsset = () => {
             assetTag: currentAsset.assetTag || '',
             name: currentAsset.name || '',
             category: currentAsset.category || 'Hardware',
+            status: currentAsset.status || 'Available',
             model: currentAsset.model || '',
             serialNumber: currentAsset.serialNumber || '',
+            warrantyMonths: currentAsset.warrantyMonths || '',
+            productKey: currentAsset.productKey || '',
+            seats: currentAsset.seats || '',
+            expirationDate: currentAsset.expirationDate ? currentAsset.expirationDate.split('T')[0] : '',
             purchasePrice: currentAsset.purchasePrice || '',
-            // Slices the MongoDB date to YYYY-MM-DD so the calendar input works
             purchaseDate: currentAsset.purchaseDate ? currentAsset.purchaseDate.split('T')[0] : '',
             supplier: currentAsset.supplier || '',
-            warrantyMonths: currentAsset.warrantyMonths || '',
-            status: currentAsset.status || 'Available',
             assignedTo: currentAsset.assignedTo || '',
             location: currentAsset.location || '',
             notes: currentAsset.notes || ''
@@ -59,11 +75,25 @@ const EditAsset = () => {
       }
     };
 
+    fetchEmployees();
     fetchAssetDetails();
   }, [id]);
 
+  
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let updatedData = { ...formData, [name]: value };
+
+    
+    if (name === 'assignedTo') {
+      if (value !== '') {
+        updatedData.status = 'In Use';
+      } else {
+        updatedData.status = 'Available';
+      }
+    }
+
+    setFormData(updatedData);
   };
 
   const handleSubmit = async (e) => {
@@ -72,115 +102,151 @@ const EditAsset = () => {
       await api.put(`/assets/${id}`, formData);
       navigate('/');
     } catch (err) {
-      setError('Failed to update asset. Check console for details.');
+      setError('Failed to update asset.');
       console.error(err);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-slate-500 font-medium animate-pulse">Loading asset details from database...</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="flex justify-center items-center h-64"><p className="text-slate-500 animate-pulse">Loading...</p></div>;
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Edit Asset</h2>
-          <p className="text-sm text-slate-500 mt-1">Update information for this specific inventory item.</p>
         </div>
-        <Link to="/" className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
-          &larr; Back to Dashboard
-        </Link>
+        <Link to="/" className="text-sm font-medium text-slate-500 hover:text-slate-800">&larr; Back</Link>
       </div>
-
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
-          <p className="font-medium">{error}</p>
-        </div>
-      )}
 
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <form onSubmit={handleSubmit}>
           <div className="p-8 space-y-8">
             
-            {/* SECTION 1: Identification */}
+            {}
             <div>
               <h4 className="text-sm font-bold text-blue-600 uppercase mb-4">Identification</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1">Asset Tag *</label>
-                  <input type="text" name="assetTag" required onChange={handleChange} value={formData.assetTag} className="w-full px-4 py-2.5 rounded-md border border-slate-300 focus:ring-2 focus:ring-blue-500" />
+                  <input type="text" name="assetTag" required onChange={handleChange} value={formData.assetTag} className="w-full px-4 py-2.5 rounded-md border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1">Asset Name *</label>
-                  <input type="text" name="name" required onChange={handleChange} value={formData.name} className="w-full px-4 py-2.5 rounded-md border border-slate-300 focus:ring-2 focus:ring-blue-500" />
+                  <input type="text" name="name" required onChange={handleChange} value={formData.name} className="w-full px-4 py-2.5 rounded-md border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Category</label>
-                  <select name="category" onChange={handleChange} value={formData.category} className="w-full px-4 py-2.5 rounded-md border border-slate-300 bg-white">
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Category (Changes Form)</label>
+                  <select name="category" onChange={handleChange} value={formData.category} className="w-full px-4 py-2.5 rounded-md border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none font-bold text-blue-700">
                     <option value="Hardware">Hardware</option>
-                    <option value="Software">Software</option>
-                    <option value="Furniture">Furniture</option>
+                    <option value="Licence">Licence</option>
+                    <option value="Consumables">Consumables</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            {/* SECTION 2: Details */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Model</label>
-                <input type="text" name="model" onChange={handleChange} value={formData.model} className="w-full px-4 py-2.5 rounded-md border border-slate-300" />
+            {}
+            {formData.category === 'Hardware' && (
+              <div className="p-5 bg-slate-50 border border-slate-200 rounded-lg">
+                <h4 className="text-sm font-bold text-slate-700 uppercase mb-4">Hardware Specs</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Model</label>
+                    <input type="text" name="model" onChange={handleChange} value={formData.model} className="w-full px-4 py-2 text-sm rounded-md border border-slate-300" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Serial Number</label>
+                    <input type="text" name="serialNumber" onChange={handleChange} value={formData.serialNumber} className="w-full px-4 py-2 text-sm rounded-md border border-slate-300 font-mono" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Warranty (Months)</label>
+                    <input type="number" name="warrantyMonths" onChange={handleChange} value={formData.warrantyMonths} className="w-full px-4 py-2 text-sm rounded-md border border-slate-300" />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Serial Number</label>
-                <input type="text" name="serialNumber" onChange={handleChange} value={formData.serialNumber} className="w-full px-4 py-2.5 rounded-md border border-slate-300 font-mono text-sm" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Purchase Price *</label>
-                <input type="number" name="purchasePrice" required onChange={handleChange} value={formData.purchasePrice} className="w-full px-4 py-2.5 rounded-md border border-slate-300" />
-              </div>
-            </div>
+            )}
 
-            {/* SECTION 3: Status & Assignment */}
+            {}
+            {formData.category === 'Licence' && (
+              <div className="p-5 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="text-sm font-bold text-blue-700 uppercase mb-4">Software Licence Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-xs font-semibold text-blue-700 mb-1">Product Key</label>
+                    <input type="text" name="productKey" onChange={handleChange} value={formData.productKey} className="w-full px-4 py-2 text-sm rounded-md border border-blue-300 font-mono" placeholder="XXXX-XXXX-XXXX-XXXX" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-blue-700 mb-1">Total Seats (Users Allowed)</label>
+                    <input type="number" name="seats" onChange={handleChange} value={formData.seats} className="w-full px-4 py-2 text-sm rounded-md border border-blue-300" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-blue-700 mb-1">Expiration Date</label>
+                    <input type="date" name="expirationDate" onChange={handleChange} value={formData.expirationDate} className="w-full px-4 py-2 text-sm rounded-md border border-blue-300" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {}
             <div>
-              <h4 className="text-sm font-bold text-blue-600 uppercase mb-4">Status & Location</h4>
+              <h4 className="text-sm font-bold text-slate-600 uppercase mb-4">Purchase Information</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Status</label>
-                  <select name="status" onChange={handleChange} value={formData.status} className="w-full px-4 py-2.5 rounded-md border border-slate-300 bg-white">
-                    <option value="Available">Available</option>
-                    <option value="In Use">In Use</option>
-                    <option value="Maintenance">Maintenance</option>
-                    <option value="Retired">Retired</option>
-                  </select>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Supplier</label>
+                  <input type="text" name="supplier" onChange={handleChange} value={formData.supplier} className="w-full px-4 py-2.5 rounded-md border border-slate-300 outline-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Location</label>
-                  <input type="text" name="location" onChange={handleChange} value={formData.location} className="w-full px-4 py-2.5 rounded-md border border-slate-300" />
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Purchase Date</label>
+                  <input type="date" name="purchaseDate" onChange={handleChange} value={formData.purchaseDate} className="w-full px-4 py-2.5 rounded-md border border-slate-300 outline-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Assigned To</label>
-                  <input type="text" name="assignedTo" onChange={handleChange} value={formData.assignedTo} className="w-full px-4 py-2.5 rounded-md border border-slate-300" />
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Purchase Price</label>
+                  <input type="number" name="purchasePrice" onChange={handleChange} value={formData.purchasePrice} className="w-full px-4 py-2.5 rounded-md border border-slate-300 outline-none" />
                 </div>
               </div>
             </div>
 
-            {/* Notes Section */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">Notes</label>
-              <textarea name="notes" rows="3" onChange={handleChange} value={formData.notes} className="w-full px-4 py-2.5 rounded-md border border-slate-300"></textarea>
+            {}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+               <div>
+                 <label className="block text-xs font-semibold text-slate-500 mb-1">Status</label>
+                 <select name="status" onChange={handleChange} value={formData.status} className="w-full px-4 py-2.5 rounded-md border border-slate-300 bg-white">
+                   <option value="Available">Available</option>
+                   <option value="In Use">In Use</option>
+                   <option value="Maintenance">Maintenance</option>
+                 </select>
+               </div>
+               
+               {}
+               <div>
+                 <label className="block text-xs font-semibold text-slate-500 mb-1">Assigned To</label>
+                 <select 
+                   name="assignedTo" 
+                   onChange={handleChange} 
+                   value={formData.assignedTo} 
+                   className="w-full px-4 py-2.5 rounded-md border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                 >
+                   <option value="">-- Unassigned (In Inventory) --</option>
+                   {employeeList.map(emp => (
+                     <option key={emp._id} value={emp.name}>
+                       {emp.name} ({emp.department})
+                     </option>
+                   ))}
+                 </select>
+               </div>
+               
+               {}
+               {formData.category !== 'Licence' && (
+                 <div>
+                   <label className="block text-xs font-semibold text-slate-500 mb-1">Physical Location</label>
+                   <input type="text" name="location" onChange={handleChange} value={formData.location} className="w-full px-4 py-2.5 rounded-md border border-slate-300" />
+                 </div>
+               )}
             </div>
+
           </div>
 
           <div className="bg-slate-50 px-8 py-5 border-t flex justify-end gap-3">
-            <button type="button" onClick={() => navigate('/')} className="px-5 py-2.5 rounded-md text-sm font-medium text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 transition-colors">
-              Cancel
-            </button>
             <button type="submit" className="bg-blue-600 text-white px-6 py-2.5 rounded-md font-medium hover:bg-blue-700 shadow-sm transition-colors">
               Update Asset
             </button>

@@ -10,9 +10,7 @@ const SidebarLayout = ({ children }) => {
       <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col transition-all duration-300">
         {/* Logo Area */}
         <div className="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800">
-          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center mr-3 font-bold text-white shadow-lg shadow-blue-500/30">
-            AM
-          </div>
+          
           <h1 className="text-xl font-bold text-white tracking-wide">
             AssetManager
           </h1>
@@ -43,15 +41,33 @@ const SidebarLayout = ({ children }) => {
           >
             Create New Asset
           </Link>
+
+          <Link to="/users" className="block px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+            Employees
+          </Link>
+
+          {/* Reports Link */}
+          <Link 
+            to="/reports" 
+            className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-colors ${
+              location.pathname === '/reports' 
+                ? 'bg-blue-600/10 text-blue-400' 
+                : 'hover:bg-slate-800 hover:text-white'
+            }`}
+          >
+            Reports & Export
+          </Link>
+
+        
         </nav>
         
         {/* User Profile Area (Bottom) */}
         <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center">
           <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold text-white">
-            IT
+            A
           </div>
           <div className="ml-3">
-            <p className="text-sm font-medium text-white">IT Admin</p>
+            <p className="text-sm font-medium text-white">Admin</p>
             <p className="text-xs text-slate-500">View Profile</p>
           </div>
         </div>
@@ -67,14 +83,7 @@ const SidebarLayout = ({ children }) => {
              location.pathname === '/add' ? 'Asset Creation' : 'Workspace'}
           </h2>
           
-          {/* Placeholder for future global search */}
-          <div className="flex items-center">
-            <input 
-              type="text" 
-              placeholder="Search by Asset Tag..." 
-              className="px-4 py-1.5 text-sm border border-slate-300 rounded-md bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors w-64"
-            />
-          </div>
+          
         </header>
 
         {/* Scrollable Content Area */}

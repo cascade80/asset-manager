@@ -3,6 +3,9 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import assetRoutes from './routes/assetRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import auditRoutes from './routes/auditRoutes.js';
+
 
 dotenv.config();
 
@@ -10,6 +13,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use('/api/users', userRoutes);
+app.use('/api/audit', auditRoutes);
 
 app.get('/', (req, res) => {
   res.send('Asset Manager API is running!');
@@ -27,3 +32,5 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((error) => {
     console.error('Error connecting to MongoDB:', error.message);
   });
+
+  
