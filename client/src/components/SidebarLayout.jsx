@@ -1,7 +1,10 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/useAuth.js';
 
 const SidebarLayout = ({ children }) => {
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const content = children ?? <Outlet />;
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
@@ -70,14 +73,21 @@ const SidebarLayout = ({ children }) => {
         </nav>
         
         {}
-        <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center">
-          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold text-white">
-            A
+        <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold text-white uppercase">
+            {(user?.name || 'A').slice(0, 1)}
           </div>
           <div className="ml-3">
-            <p className="text-sm font-medium text-white">Admin</p>
-            <p className="text-xs text-slate-500">View Profile</p>
+            <p className="text-sm font-medium text-white">{user?.name || 'Admin'}</p>
+            <p className="text-xs text-slate-500">{user?.email || 'Signed in user'}</p>
           </div>
+          <button
+            type="button"
+            onClick={logout}
+            className="ml-auto rounded-full border border-slate-700 px-3 py-1 text-xs font-medium text-slate-300 transition hover:border-slate-500 hover:text-white"
+          >
+            Logout
+          </button>
         </div>
       </aside>
 
@@ -99,7 +109,7 @@ const SidebarLayout = ({ children }) => {
         {}
         <main className="flex-1 overflow-y-auto p-8">
           <div className="max-w-7xl mx-auto">
-            {children}
+            {content}
           </div>
         </main>
         

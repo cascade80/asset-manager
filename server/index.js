@@ -6,7 +6,7 @@ import assetRoutes from './routes/assetRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import auditRoutes from './routes/auditRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
-
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 
@@ -14,6 +14,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/reports', reportRoutes);
