@@ -1,19 +1,60 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import Papa from 'papaparse';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    Papa.parse(file, {
+      header: true, 
+      skipEmptyLines: true,
+      complete: async (results) => {
+        try {
+          const rawData = results.data;
+          
+          const formattedData = rawData.map(row => ({
+            name: row['Name'] || row.name,
+            email: row['Email'] || row.email,
+            
+            department: row['Department'] || 'Engineering', 
+            
+            role: 'User'
+          }));
+
+          
+          await api.post('/users/bulk', formattedData);
+          
+          alert(`Successfully imported ${formattedData.length} users!`);
+          
+          fetchUsers(); 
+        } catch (error) {
+          console.error("Import failed:", error);
+          alert("Import failed. Check console for details.");
+        } finally {
+          setIsImporting(false);
+          if (fileInputRef.current) fileInputRef.current.value = ''; 
+        }
+      }
+    });
+  };
+    
   
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     department: 'Engineering',
-    role: 'Employee'
+    role: 'User' 
   });
 
-  
   const fetchUsers = async () => {
     try {
       const res = await api.get('/users');
@@ -29,18 +70,16 @@ const Users = () => {
     fetchUsers();
   }, []);
 
-  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await api.post('/users', formData);
       
-      setFormData({ name: '', email: '', department: 'Engineering', role: 'Employee' });
+      setFormData({ name: '', email: '', department: 'Engineering', role: 'User' });
       
       fetchUsers();
     } catch (error) {
@@ -54,13 +93,34 @@ const Users = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       
-      {}
       <div>
         <h2 className="text-2xl font-bold text-slate-800">Employee Directory</h2>
         <p className="text-sm text-slate-500 mt-1">Manage staff members and hardware assignments.</p>
       </div>
+      
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-slate-800">Overview</h2>
+        <div className="flex gap-3">
+          
+          <input 
+            type="file" 
+            accept=".csv" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            className="hidden" 
+          />
+          
+          <button 
+            onClick={() => fileInputRef.current.click()} 
+            disabled={isImporting}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium shadow-sm transition-colors h-10.5"
+          >
+            {isImporting ? 'Importing...' : 'Import Users (CSV)'}
+          </button>
+          
+        </div>
+      </div>
 
-      {}
       <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
         <h3 className="text-sm font-bold text-blue-600 uppercase mb-4">Onboard New Employee</h3>
         <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-4">
@@ -82,13 +142,13 @@ const Users = () => {
               <option value="IT">IT</option>
             </select>
           </div>
+          
           <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium shadow-sm transition-colors h-10.5">
             + Add User
           </button>
         </form>
       </div>
 
-      {}
       <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider">

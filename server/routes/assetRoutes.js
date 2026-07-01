@@ -18,7 +18,6 @@ router.route('/')
 router.get('/search', searchAssets);
 router.post('/bulk', createBulkAssets);
 
-
 router.route('/:id')
   .put(updateAsset)    
   .delete(deleteAsset);

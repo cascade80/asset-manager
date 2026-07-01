@@ -3,7 +3,6 @@ import AuditLog from '../models/Auditlogs.js';
 
 const router = express.Router();
 
-
 export const createLog = async (action, asset, details) => {
   try {
     const log = new AuditLog({

@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
+
+
 
 const AddAsset = () => {
   const navigate = useNavigate();
@@ -8,6 +10,22 @@ const AddAsset = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   
+
+  const [employeeList, setEmployeeList] = useState([]);
+
+useEffect(() => {
+  const fetchEmployees = async () => {
+    try {
+      const res = await api.get('/users');
+      setEmployeeList(res.data);
+    } catch (err) {
+      console.error('Could not fetch employees:', err);
+    }
+  };
+
+  fetchEmployees();
+}, []);
+
   const [formData, setFormData] = useState({
     assetTag: '',
     name: '',
@@ -30,9 +48,20 @@ const AddAsset = () => {
     notes: ''
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+const handleChange = (e) => {
+  const { name, value } = e.target;
+
+  let updatedData = {
+    ...formData,
+    [name]: value,
   };
+
+  if (name === 'assignedTo') {
+    updatedData.status = value === '' ? 'Available' : 'In Use';
+  }
+
+  setFormData(updatedData);
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,11 +69,21 @@ const AddAsset = () => {
     setError('');
     
     try {
-      
-      await api.post('/assets', formData);
+      const payload = {
+        ...formData,
+        warrantyMonths: formData.warrantyMonths || null,
+        seats: formData.seats === '' ? null : Number(formData.seats),
+        purchasePrice: formData.purchasePrice === '' ? null : Number(formData.purchasePrice),
+        purchaseDate: formData.purchaseDate || null,
+        expirationDate: formData.expirationDate || null,
+        location: formData.category === 'Licence' && !formData.location ? undefined : formData.location || undefined
+      };
+
+      await api.post('/assets', payload);
       navigate('/'); 
     } catch (err) {
-      setError('Failed to create asset. Check console for details.');
+      const message = err?.response?.data?.message || 'Failed to create asset. Check console for details.';
+      setError(message);
       setIsSubmitting(false);
       console.error(err);
     }
@@ -110,8 +149,8 @@ const AddAsset = () => {
                     <input type="text" name="serialNumber" onChange={handleChange} value={formData.serialNumber} className="w-full px-4 py-2 text-sm rounded-md border border-slate-300 font-mono" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">Warranty (Months)</label>
-                    <input type="number" name="warrantyMonths" onChange={handleChange} value={formData.warrantyMonths} className="w-full px-4 py-2 text-sm rounded-md border border-slate-300" placeholder="e.g. 12" />
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Warranty Until</label>
+                    <input type="date" name="warrantyMonths" onChange={handleChange} value={formData.warrantyMonths} className="w-full px-4 py-2 text-sm rounded-md border border-slate-300" placeholder="e.g. 12" />
                   </div>
                 </div>
               </div>
@@ -175,6 +214,29 @@ const AddAsset = () => {
                    <input type="text" name="location" onChange={handleChange} value={formData.location} className="w-full px-4 py-2.5 rounded-md border border-slate-300" placeholder="e.g. Server Room A" />
                  </div>
                )}
+
+               {
+                <div>
+  <label className="block text-xs font-semibold text-slate-500 mb-1">
+    Assigned To
+  </label>
+
+  <select
+    name="assignedTo"
+    value={formData.assignedTo}
+    onChange={handleChange}
+    className="w-full px-4 py-2.5 rounded-md border border-slate-300 bg-white"
+  >
+    <option value="">-- Unassigned (In Inventory) --</option>
+
+    {employeeList.map((emp) => (
+      <option key={emp._id} value={emp.name}>
+        {emp.name} ({emp.department})
+      </option>
+    ))}
+  </select>
+</div>
+               }
             </div>
 
             {}

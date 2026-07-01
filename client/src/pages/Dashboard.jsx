@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { href, Link ,Navigate,useNavigate} from 'react-router-dom';
 import api from '../api/axios';
 import Papa from 'papaparse';
 
@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [isImporting, setIsImporting] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
 
   const fetchAssets = () => {
     api.get('/assets').then(res => {
@@ -108,6 +109,8 @@ const Dashboard = () => {
      alert("Could not delete asset. Check the console.");
    }
   };
+
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -262,6 +265,7 @@ const Dashboard = () => {
       {}
       <div className="bg-white border border-slate-200 rounded-lg  overflow-hidden">
         <table className="w-full text-left">
+          
           <thead className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider">
             <tr>
               <th className="px-6 py-3 font-semibold">Tag</th>
@@ -276,21 +280,25 @@ const Dashboard = () => {
           <tbody className="divide-y divide-slate-200 text-sm">
            {filteredAssets.length > 0 ? (
              filteredAssets.map((a) => (
-               <tr key={a._id} className="hover:bg-slate-50 transition-colors">
-                 <td className="px-6 py-4 font-mono text-slate-600">{a.assetTag}</td>
-                 <td className="px-6 py-4 font-medium text-slate-900">{a.name}</td>
-                 <td className="px-6 py-4 text-slate-600">{a.category}</td>
-                  <td className="px-6 py-4 text-slate-600">{a.assignedTo || '-'}</td>
-                  <td className="px-6 py-4 text-slate-600">{a.location || '-'}</td>
-                 <td className="px-6 py-4">
+               <tr key={a._id} className="hover:bg-slate-50 transition-colors " >
+                
+                 <td className="px-6 py-4 font-mono text-slate-600"onClick={() => navigate(`/details/${a._id}`)} >{a.assetTag}</td>
+                 <td className="px-6 py-4 font-medium text-slate-900"onClick={() => navigate(`/details/${a._id}`)}>{a.name}</td>
+                 <td className="px-6 py-4 text-slate-600"onClick={() => navigate(`/details/${a._id}`)}>{a.category}</td>
+                  <td className="px-6 py-4 text-slate-600"onClick={() => navigate(`/details/${a._id}`)}>{a.assignedTo || '-'}</td>
+                  <td className="px-6 py-4 text-slate-600"onClick={() => navigate(`/details/${a._id}`)}>{a.location || '-'}</td>
+                 <td className="px-6 py-4" onClick={() => navigate(`/details/${a._id}`)}>
                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                      a.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
                    }`}>
                      {a.status}
                    </span>
                  </td>
+                
                  <td className="px-6 py-4 text-right flex justify-end gap-3">
-                   <Link to={`/edit/${a._id}`} className="text-blue-600 hover:text-blue-800 font-medium">Edit</Link>
+                   <Link to={`/edit/${a._id}`} className="text-blue-600 hover:text-blue-800 font-medium">
+                   Edit
+                   </Link>
                    <button 
                      onClick={() => handleDelete(a._id)} 
                      className="text-red-600 hover:text-red-800 font-medium"

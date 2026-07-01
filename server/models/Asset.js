@@ -13,11 +13,11 @@ const assetSchema = new mongoose.Schema({
   expirationDate: { type: Date, default: null },
   
   
-  purchasePrice: { type: Number, required: true },
-  purchaseDate: { type: Date },
-  supplier: { type: String },
+  purchasePrice: { type: Number, required: false , default : null },
+  purchaseDate: { type: Date, default : null },
+  supplier: { type: String, default : null },
   orderNumber: { type: String },
-  warrantyMonths: { type: Number, default: 0 },
+  warrantyMonths: { type: Date, default: null },
   
   
   status: { type: String, required: true, default: 'Available' },
